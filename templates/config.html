@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <style>
+         .led {
+         width: 15px;
+         height: 15px;
+         background-color: #ff0000;
+         border-radius: 50%;
+         box-shadow: rgba(180, 180, 180, 50) 0 -1px 7px 1px, inset #333333 0 -1px 9px, #ffffff 0 2px 12px;
+         position: relative;  /* les .infobulle deviennent référents */
+         cursor: help;
+         }
+         .led:hover::after,
+         .led:focus::after {
+         border-radius:5px;
+         border:2px solid #CCCCCC;
+         background: #e6e6e6;
+         content: attr(aria-label);  /* on affiche aria-label */
+         position: absolute;
+         top: -2.4em;
+         left: 50%;
+         transform: translateX(-50%); /* on centre horizontalement  */
+         z-index: 1; /* pour s'afficher au dessus des éléments en position relative */
+         white-space: nowrap;  /* on interdit le retour à la ligne */
+         }
+         .Iframe{
+         box-shadow: rgba(180, 180, 180, 50) 0 -1px 7px 1px, inset #333333 0 -1px 9px, #ffffff 0 2px 12px;
+         width: 100%;
+         height: 100%;
+         margin-top: 20px;
+         }
+      </style>
+      <meta charset="utf-8">
+      <title>Manager</title>
+   </head>
+   <body>
+      <div class="data">
+        <div class="tableau">
+         <table id="Configurateur" class="table">
+            <caption>
+               <h1 id="titre">Configurateur</h1>
+            </caption>
+            <tbody>
+               <tr>
+                  <td><b>Sawyer</b></td>
+                  <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                  <td><b>IP</b></td>
+                  <td>
+                     <p id="IPsawyer"></p>
+                  </td>
+                  <td><input type="text" name="newIP" required="required" placeholder="Ex : 192.168.0.110" id="InputIPSawyer"/></td>
+               </tr>
+               <tr>
+                  <td></td>
+                  <td></td>
+                  <td><b>Port </b></td>
+                  <td>
+                     <p id="Portsawyer"></p>
+                  </td>
+                  <td><input type="number" name="newPort" required="required" placeholder="Ex : 4000" id="InputPortSawyer"/></td>
+               </tr>
+               <tr>
+                  <td></td>
+                  <td></td>
+                  <td><b>State</b></td>
+                  <td></td>
+                  <td>
+                     <div class="led" id="ledSawyer"aria-label="disconnected"></div>
+                  </td>
+               <tr>
+               <tr>
+                  <td>&nbsp;</td>
+               </tr>
+               <td><b>Camera</b></td>
+               <td></td>
+               <td><b>IP</b></td>
+               <td>
+                  <p id="IPcamera"></p>
+               </td>
+               <td><input type="text" name="newIP" required="required" placeholder="Ex : 192.168.0.110" id="InputIPCamera"/></td>
+               </tr>
+               <tr>
+                  <td></td>
+                  <td></td>
+                  <td><b>Port </b></td>
+                  <td>
+                     <p id="Portcamera"></p>
+                  </td>
+                  <td><input type="number" name="newPort" required="required" placeholder="Ex : 4000" id="InputPortCamera"/></td>
+               </tr>
+               <tr>
+                  <td></td>
+                  <td></td>
+                  <td><b>State</b></td>
+                  <td></td>
+                  <td>
+                     <div class="led" id="ledCamera"aria-label="disconnected"></div>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+         </div>
+           <div class = "Iframe">
+              <iframe id="inlineFrameCamera"
+                 title="Sensorpart"
+                 width = "100%"
+                 height = "900px";
+                 src="">
+              </iframe>
+            </div>
+      </div>
+   </body>
+   <script src="js/jquery.min.js"></script>
+   <script> 
+      $.ajax("/GET/IPSawyer").done(function(data){
+        $("#IPsawyer").text(data);
+	connectionSawyer();
+      });
+      
+      $.ajax("/GET/IPCamera").done(function(data){
+        $("#IPcamera").text(data);
+        var elmt = document.getElementById("inlineFrameCamera");
+        elmt.setAttribute('src',"http://" + data + "/");
+	connectionCamera();
+      });
+      
+      $.ajax("/GET/portSawyer").done(function(data){
+        $("#Portsawyer").text(data);
+	connectionSawyer();
+      });
+      
+      $.ajax("/GET/portCamera").done(function(data){
+        $("#Portcamera").text(data);
+	connectionCamera();
+      });
+      
+      document.getElementById("InputIPSawyer").onchange = function(){
+        //mask to verify if IP has a valid 
+        if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(this.value)) {  
+            console.log(this.value);
+            str=JSON.stringify(this.value);
+            console.log(str);
+          $.ajax({
+              type: "POST",
+            url: "/POST/IPSawyer",
+              data: str,
+              dataType: 'text'
+          }).done(function(){ 
+            $.ajax("/GET/IPSawyer").done(function(data){
+              $("#IPsawyer").text(data);
+		connectionSawyer();
+            });
+          });
+        }else{
+            alert("You have entered an invalid IP address!") ; 
+            return (false);
+            }  
+      }
+      
+      document.getElementById("InputIPCamera").onchange = function(){
+        //mask to verify if IP has a valid 
+        if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(this.value)) {  
+            console.log(this.value)
+            str=JSON.stringify(this.value);
+            console.log(str);
+          $.ajax({
+              type: "POST",
+            url: "/POST/IPCamera",
+              data: str,
+              dataType: 'text'
+          }).done(function(){ 
+            $.ajax("/GET/IPCamera").done(function(data){
+              $("#IPcamera").text(data);
+              var elmt = document.getElementById("inlineFrameCamera");
+              elmt.setAttribute('src',"http://" + data + "/");
+		connectionCamera();
+
+            });
+          });
+        }else{
+            alert("You have entered an invalid IP address!") ; 
+            return (false);
+            }  
+      }
+      
+      document.getElementById("InputPortSawyer").onchange = function(){
+        str=JSON.stringify(this.value);
+        $.ajax({
+            type: "POST",
+          url: "/POST/portSawyer",
+            data: str,
+            dataType: 'text'
+        }).done(function(){ 
+          $.ajax("/GET/portSawyer").done(function(data){
+            $("#Portsawyer").text(data);
+		connectionSawyer();
+          });
+        });
+      }
+      
+      document.getElementById("InputPortCamera").onchange = function(){
+        str=JSON.stringify(this.value);
+        $.ajax({
+            type: "POST",
+          url: "/POST/portCamera",
+            data: str,
+            dataType: 'text'
+        }).done(function(){ 
+          $.ajax("/GET/portCamera").done(function(data){
+            $("#Portcamera").text(data);
+		connectionCamera();
+          });
+        });
+      }
+
+	function connectionSawyer(){
+	$.ajax("/GET/connexionSawyer").done(function(data){
+          var elmt = document.getElementById("ledSawyer");
+          if(data == 1){
+            elmt.style.backgroundColor="#ABFF00";
+            elmt.setAttribute('aria-label', "connected")
+          }else{
+            elmt.setAttribute('aria-label', "disconnected")
+            elmt.style.backgroundColor="#ff0000";
+          }
+        });
+	}
+      
+      function connectionCamera(){
+        $.ajax("/GET/connexionCamera").done(function(data){
+          var elmt = document.getElementById("ledCamera");
+        if(data == 1){
+          elmt.style.backgroundColor="#ABFF00";
+          elmt.setAttribute('aria-label', "connected")
+        }else{
+          elmt.setAttribute('aria-label', "disconnected")
+          elmt.style.backgroundColor="#ff0000";
+        }
+        });
+      };
+   </script>
+</html>
