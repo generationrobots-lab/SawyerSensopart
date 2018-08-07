@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #run.py
-import sys
+import sys, os
 sys.path.append("/usr/lib/python2.7/site-packages")
 from flask import Flask, request, render_template, send_from_directory
 from flask_cors import CORS, cross_origin
@@ -13,7 +13,8 @@ CORS(app)
 
 class Server():
 	def __init__(self):
-		self.interface = interface.Main("/home/pi/SawyerSensopart/param.json")
+		dir_path = os.path.dirname(os.path.realpath(__file__))
+		self.interface = interface.Main(dir_path + "/param.json")
 
 server = Server()
 
